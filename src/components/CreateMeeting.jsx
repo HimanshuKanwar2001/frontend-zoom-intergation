@@ -1,87 +1,242 @@
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { createMeeting } from "../api/zoom";
-import {
-  TextField,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-} from "@mui/material";
 
 const CreateMeeting = () => {
   const [formData, setFormData] = useState({
-    email: "",
     topic: "",
     start_time: "",
-    duration: "",
+    durationHour: "0",
+    durationMinute: "30",
+    recurrence: false,
+    recurrenceType: "daily",
+    repeatEvery: "1",
+    endDate: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [meetingDetails, setMeetingDetails] = useState(null); // Store meeting details
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const response = await createMeeting(formData);
-    setLoading(false);
-
-    if (response) {
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return createMeeting(formData);
+    },
+    onSuccess: (data) => {
       alert("Meeting Created Successfully!");
-      setFormData({  topic: "", start_time: "", duration: "" });
-    } else {
-      setError("Failed to create meeting. Try again.");
+      setMeetingDetails(data); // Store response data
+    },
+    onError: () => alert("Failed to create meeting."),
+  });
+
+  const copyToClipboard = () => {
+    if (meetingDetails) {
+      const meetingText = `📌 *Zoom Meeting Details* 📌
+
+🔹 *Topic:* ${meetingDetails.topic}
+📅 *Start Time:* ${new Date(meetingDetails.start_time).toLocaleString()}
+🆔 *Meeting ID:* ${meetingDetails.id}
+🔑 *Passcode:* ${meetingDetails.password}
+🔗 *Join Link:* ${meetingDetails.join_url}
+
+Join on time! ⏳`;
+
+      navigator.clipboard.writeText(meetingText).then(() => {
+        alert("Meeting details copied to clipboard! 📋");
+      });
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <Card className="shadow-lg">
-        <CardContent>
-          <Typography variant="h6" className="font-bold mb-4">
-            Create Zoom Meeting
-          </Typography>
-          {error && <p className="text-red-500">{error}</p>}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            
-            <TextField
-              label="Meeting Topic"
+    <div className="flex gap-6 p-6">
+      {/* Left Side: Create Meeting Form */}
+      <div className="w-2/3 bg-white shadow-md rounded-lg p-6 border">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          Schedule Meeting
+        </h2>
+
+        <div className="space-y-4">
+          {/* Topic Input */}
+          <div>
+            <label className="block text-gray-700 font-medium">Topic</label>
+            <input
+              type="text"
               name="topic"
               value={formData.topic}
               onChange={handleChange}
-              fullWidth
+              className="w-full p-2 border rounded focus:ring focus:border-blue-400"
+              placeholder="Enter meeting topic"
             />
-            <TextField
+          </div>
+
+          {/* Start Time Input */}
+          <div>
+            <label className="block text-gray-700 font-medium">
+              Start Time
+            </label>
+            <input
               type="datetime-local"
               name="start_time"
               value={formData.start_time}
               onChange={handleChange}
-              fullWidth
+              className="w-full p-2 border rounded focus:ring focus:border-blue-400"
             />
-            <TextField
-              type="number"
-              label="Duration (minutes)"
-              name="duration"
-              value={formData.duration}
-              onChange={handleChange}
-              fullWidth
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Create Meeting"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+
+          {/* Duration Inputs */}
+          <div>
+            <label className="block text-gray-700 font-medium">Duration</label>
+            <div className="flex space-x-2">
+              <select
+                name="durationHour"
+                value={formData.durationHour}
+                onChange={handleChange}
+                className="p-2 border rounded w-full focus:ring"
+              >
+                {[...Array(24).keys()].map((h) => (
+                  <option key={h} value={h}>
+                    {h} hr
+                  </option>
+                ))}
+              </select>
+              <select
+                name="durationMinute"
+                value={formData.durationMinute}
+                onChange={handleChange}
+                className="p-2 border rounded w-full focus:ring"
+              >
+                {["00", "15", "30", "45"].map((m) => (
+                  <option key={m} value={m}>
+                    {m} min
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Recurring Meeting */}
+          <div>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="recurrence"
+                checked={formData.recurrence}
+                onChange={handleChange}
+                className="w-4 h-4"
+              />
+              <span className="text-gray-700 font-medium">
+                Recurring Meeting
+              </span>
+            </label>
+
+            {formData.recurrence && (
+              <div className="mt-2 p-4 border rounded bg-gray-50">
+                <label className="block text-gray-700 font-medium">
+                  Recurrence
+                </label>
+                <select
+                  name="recurrenceType"
+                  value={formData.recurrenceType}
+                  onChange={handleChange}
+                  className="p-2 border rounded w-full focus:ring"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+
+                <label className="block text-gray-700 font-medium mt-2">
+                  Repeat every
+                </label>
+                <input
+                  type="number"
+                  name="repeatEvery"
+                  value={formData.repeatEvery}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded focus:ring"
+                />
+
+                <div className="mt-2">
+                  <label className="block text-gray-700 font-medium">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded focus:ring"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <button
+            onClick={() => mutation.mutate()}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
+          >
+            {mutation.isLoading ? "Creating..." : "Create Meeting"}
+          </button>
+        </div>
+      </div>
+
+      {/* Right Side: Meeting Details */}
+      <div className="w-1/3 bg-white relative shadow-md rounded-lg p-6 border">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          Meeting Details
+        </h2>
+        { meetingDetails? (<button
+            onClick={copyToClipboard}
+            className="absolute top-3 right-3 px-3 py-1 bg-gray-800 text-white text-sm rounded-md hover:bg-gray-700"
+          >
+            📋 Copy Details
+          </button>) : "" }
+
+        {meetingDetails ? (
+            
+          <div className="space-y-2">
+            
+            <p>
+              {console.log(meetingDetails)}
+              
+              <strong>Topic:</strong> {meetingDetails.topic}
+            </p>
+            <p>
+              <strong>Start Time:</strong>{" "}
+              {new Date(meetingDetails.start_time).toLocaleString()}
+            </p>
+            <p>
+              <strong>Duration:</strong> {meetingDetails.duration} min
+            </p>
+            <p>
+              <strong>Meeting ID:</strong> {meetingDetails.id}
+            </p>
+            <p>
+              <strong>Join URL:</strong>{" "}
+              <a
+                href={meetingDetails.join_url}
+                className="text-blue-500 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {meetingDetails.join_url}
+              </a>
+            </p>
+            {meetingDetails.recurrence && (
+              <p>
+                <strong>Recurrence:</strong> {meetingDetails.recurrence.type}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-gray-500">No meeting created yet.</p>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,67 +1,79 @@
 import React, { useState } from "react";
-import { useRecoilValueLoadable } from "recoil";
-import { upcomingMeetingsState } from "../recoil/state";
-import {
-  CircularProgress,
-  Pagination,
-  Card,
-  CardContent,
-  Typography,
-} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+
+const fetchMeetings = async () => {
+  const { data } = await axios.get(
+    "http://localhost:5000/api/zoom/upcoming/meeting",
+    {
+      data: { type: "upcoming" },
+    }
+  );
+  return data;
+};
 
 const UpcomingMeetings = () => {
-  const meetingsLoadable = useRecoilValueLoadable(upcomingMeetingsState);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 5;
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["zoomMeetings"],
+    queryFn: fetchMeetings,
+  });
 
-  if (meetingsLoadable.state === "loading") {
-    return (
-      <div className="flex justify-center">
-        <CircularProgress />
-      </div>
-    );
-  }
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  if (meetingsLoadable.state === "hasError") {
-    return (
-      <div className="text-red-500 text-center">Error fetching meetings.</div>
-    );
-  }
-
-  const meetings = meetingsLoadable.contents;
-  const totalPages = Math.ceil(meetings.length / itemsPerPage);
-  const displayedMeetings = meetings.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  if (isLoading) return <p>Loading meetings...</p>;
+  if (error) return <p>Error loading meetings: {error.message}</p>;
 
   return (
-    <div className="max-w-lg mx-auto mt-10">
-      <h2 className="text-2xl font-bold mb-4">Upcoming Meetings</h2>
-      {displayedMeetings.length === 0 ? (
-        <p className="text-center">No upcoming meetings</p>
-      ) : (
-        displayedMeetings.map((meeting) => (
-          <Card key={meeting.id} className="mb-4 shadow-lg">
-            <CardContent>
-              <Typography variant="h6" className="font-bold">
-                {meeting.topic}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {new Date(meeting.start_time).toLocaleString()}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))
-      )}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4">
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(_, value) => setPage(value)}
-            color="primary"
-          />
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Upcoming Zoom Meetings</h2>
+      {/* Tabs for users */}
+      <div className="flex border-b mb-4">
+        {data.map((user) => (
+          <button
+            key={user.userName}
+            onClick={() => setSelectedUser(user.userName)}
+            className={`px-4 py-2 font-medium focus:outline-none border-b-2 transition-colors duration-300 ${
+              selectedUser === user.userName
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-600"
+            }`}
+          >
+            {user.userName}
+          </button>
+        ))}
+      </div>
+      {/* Display meetings for the selected user */}
+      {selectedUser && (
+        <div>
+          {data
+            .filter((user) => user.userName === selectedUser)
+            .map((user) => (
+              <div key={user.userName} className="mb-6">
+                {user.meetings.length > 0 ? (
+                  <ul className="mt-2 border p-4 rounded-md">
+                    {user.meetings.map((meeting) => (
+                      <li key={meeting.id} className="mb-2">
+                        <p className="font-medium">{meeting.topic}</p>
+                        <p>
+                          Start Time:{" "}
+                          {new Date(meeting.start_time).toLocaleString()}
+                        </p>
+                        <a
+                          href={meeting.join_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Join Meeting
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">No meetings scheduled.</p>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
