@@ -1,6 +1,6 @@
 import { atom, selector } from "recoil";
 import axios from "axios";
-
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 // Store User Data
 export const userState = atom({
   key: "userState",
@@ -15,7 +15,7 @@ export const upcomingMeetingsState = selector({
     if (!user) return [];
 
     try {
-      const response = await axios.post("http://localhost:5000/api/zoom/upcoming/meeting", {
+      const response = await axios.post(`${apiUrl}/api/zoom/upcoming/meeting`, {
         email: user.email,
       });
       return response.data;
