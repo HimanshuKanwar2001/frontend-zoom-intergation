@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function ZoomMeetingForm() {
-  const [meetingDetails, setMeetingDetails] = useState(null);   
+  const [meetingDetails, setMeetingDetails] = useState(null);
 
   const createMeeting = async () => {
     // Simulating API call response

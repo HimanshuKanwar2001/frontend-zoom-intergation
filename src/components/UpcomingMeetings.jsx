@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
+console.log("apiUrl----->", apiUrl);
 const fetchMeetings = async () => {
-  const { data } = await axios.get(
-    "http://localhost:5000/api/zoom/upcoming/meeting",
-    {
-      data: { type: "upcoming" },
-    }
-  );
+  const { data } = await axios.get(`${apiUrl}/api/zoom/upcoming/meeting`, {
+    data: { type: "upcoming" },
+  });
   return data;
 };
 
@@ -28,7 +27,7 @@ const UpcomingMeetings = () => {
       <h2 className="text-2xl font-bold mb-4">Upcoming Zoom Meetings</h2>
       {/* Tabs for users */}
       <div className="flex border-b mb-4">
-        {data.map((user) => (
+        {data?.map((user) => (
           <button
             key={user.userName}
             onClick={() => setSelectedUser(user.userName)}

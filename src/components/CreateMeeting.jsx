@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMeeting } from "../api/zoom";
+
 
 const CreateMeeting = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const CreateMeeting = () => {
   });
 
   const [meetingDetails, setMeetingDetails] = useState(null); // Store meeting details
+  const queryClient = useQueryClient();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,6 +30,7 @@ const CreateMeeting = () => {
     onSuccess: (data) => {
       alert("Meeting Created Successfully!");
       setMeetingDetails(data); // Store response data
+      queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
     },
     onError: () => alert("Failed to create meeting."),
   });
@@ -36,11 +39,12 @@ const CreateMeeting = () => {
     if (meetingDetails) {
       const meetingText = `📌 *Zoom Meeting Details* 📌
 
-🔹 *Topic:* ${meetingDetails.topic}
-📅 *Start Time:* ${new Date(meetingDetails.start_time).toLocaleString()}
-🆔 *Meeting ID:* ${meetingDetails.id}
-🔑 *Passcode:* ${meetingDetails.password}
-🔗 *Join Link:* ${meetingDetails.join_url}
+🔹 *Topic:* ${meetingDetails.data.topic}
+📅 *Start Time:* ${new Date(meetingDetails.data.start_time).toLocaleString()}
+🆔 *Meeting ID:* ${meetingDetails.data.id}
+🔑 *Host Key:* ${meetingDetails.hostKey}
+🔑 *Passcode:* ${meetingDetails.data.password}
+🔗 *Join Link:* ${meetingDetails.data.join_url}
 
 Join on time! ⏳`;
 
@@ -190,46 +194,64 @@ Join on time! ⏳`;
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           Meeting Details
         </h2>
-        { meetingDetails? (<button
+        {console.log(meetingDetails)}
+        {meetingDetails ? (
+          <button
             onClick={copyToClipboard}
             className="absolute top-3 right-3 px-3 py-1 bg-gray-800 text-white text-sm rounded-md hover:bg-gray-700"
           >
             📋 Copy Details
-          </button>) : "" }
+          </button>
+        ) : (
+          ""
+        )}
 
         {meetingDetails ? (
-            
           <div className="space-y-2">
-            
             <p>
               {console.log(meetingDetails)}
-              
-              <strong>Topic:</strong> {meetingDetails.topic}
+              <strong>Topic:</strong> {meetingDetails.data.topic}
             </p>
             <p>
-              <strong>Start Time:</strong>{" "}
-              {new Date(meetingDetails.start_time).toLocaleString()}
+              <strong>Start Time :</strong>{" "}
+              {new Date(meetingDetails.data.start_time).toLocaleString()}
             </p>
             <p>
-              <strong>Duration:</strong> {meetingDetails.duration} min
+              <strong>Duration :</strong> {meetingDetails.data.duration} min
             </p>
             <p>
-              <strong>Meeting ID:</strong> {meetingDetails.id}
+              <strong>Meeting ID :</strong> {meetingDetails.data.id}
+            </p>
+            <p>
+              {" "}
+              <strong>Email ID : </strong>
+              {meetingDetails.data.host_email}
+            </p>
+            <p>
+              {" "}
+              <strong>HostKey : </strong>
+              {meetingDetails.hostKey}
+            </p>
+            <p>
+              {" "}
+              <strong>UserName : </strong>
+              {meetingDetails.name}
             </p>
             <p>
               <strong>Join URL:</strong>{" "}
               <a
-                href={meetingDetails.join_url}
+                href={meetingDetails.data.join_url}
                 className="text-blue-500 underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {meetingDetails.join_url}
+                {meetingDetails.data.join_url}
               </a>
             </p>
-            {meetingDetails.recurrence && (
+            {meetingDetails.data.recurrence && (
               <p>
-                <strong>Recurrence:</strong> {meetingDetails.recurrence.type}
+                <strong>Recurrence:</strong>{" "}
+                {meetingDetails.data.recurrence.type}
               </p>
             )}
           </div>

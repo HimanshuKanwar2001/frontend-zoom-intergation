@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function SearchMeetings() {
@@ -6,18 +6,37 @@ export default function SearchMeetings() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [debounceTimeout, setDebounceTimeout] = useState(null);
+
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setResults([]);
+      setError(null);
+      return;
+    }
+
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      handleSearch();
+    }, 500); // 500ms debounce time
+
+    setDebounceTimeout(timeout);
+  }, [searchQuery]);
 
   const handleSearch = async () => {
-    if (!searchQuery) return;
     setLoading(true);
     setError(null);
     setResults([]);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/zoom/search",
-        { searchQuery }
-      );
+      const response = await axios.post(`${apiUrl}/api/zoom/search`, {
+        searchQuery,
+      });
       setResults(response.data.results);
     } catch (error) {
       console.log("ERROR:", error);
@@ -38,14 +57,8 @@ export default function SearchMeetings() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
       </div>
+      {loading && <p className="text-blue-500">Searching...</p>}
       {error && <p className="text-red-500">{error}</p>}
       <ul className="space-y-2">
         {results.map((meeting, index) => (
