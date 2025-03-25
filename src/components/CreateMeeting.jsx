@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMeeting } from "../api/zoom";
 
-
 const CreateMeeting = () => {
   const [formData, setFormData] = useState({
     topic: "",
@@ -25,6 +24,7 @@ const CreateMeeting = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      console.log("formData", formData);
       return createMeeting(formData);
     },
     onSuccess: (data) => {
