@@ -73,11 +73,11 @@ const UpcomingMeetings = () => {
             .map((user) => (
               <div key={user.userName} className="mb-6">
                 {user.meetings.length > 0 ? (
-                  <ul className="mt-2 border p-4 rounded-md">
+                  <ul className="mt-2  p-4 rounded-md">
                     {user.meetings.map((meeting) => (
                       <li
                         key={meeting.id}
-                        className="mb-2 flex justify-between items-center"
+                        className="mb-2 flex justify-between  p-5 rounded-2xl shadow-lg shadow-amber-600 items-center"
                       >
                         <div>
                           <p className="font-medium">{meeting.topic}</p>
