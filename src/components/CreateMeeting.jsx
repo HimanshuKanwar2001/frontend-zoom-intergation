@@ -160,13 +160,15 @@ Join on time! ⏳`;
                   name="repeatEvery"
                   value={formData.repeatEvery}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded focus:ring"
+                  className="w-[90%] p-2 border rounded focus:ring"
                 />
+                <span> day(s)</span>
 
                 <div className="mt-2">
                   <label className="block text-gray-700 font-medium">
                     End Date
                   </label>
+
                   <input
                     type="date"
                     name="endDate"

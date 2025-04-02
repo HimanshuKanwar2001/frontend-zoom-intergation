@@ -29,21 +29,29 @@ const deleteMeeting = async ({ id, host_id }) => {
 
 const UpcomingMeetings = () => {
   const queryClient = useQueryClient();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["zoomMeetings"],
     queryFn: fetchMeetings,
   });
+
   const mutation = useMutation({
     mutationFn: deleteMeeting,
+    onMutate: (variables) => {
+      setDeletingId(variables.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
+    },
+    onSettled: () => {
+      setDeletingId(null);
     },
     onError: (error) => {
       alert(error.message);
     },
   });
-
-  const [selectedUser, setSelectedUser] = useState(null);
 
   if (isLoading) return <p>Loading meetings...</p>;
   if (error) return <p className="text-red-500">{error.message}</p>;
@@ -73,11 +81,11 @@ const UpcomingMeetings = () => {
             .map((user) => (
               <div key={user.userName} className="mb-6">
                 {user.meetings.length > 0 ? (
-                  <ul className="mt-2  p-4 rounded-md">
+                  <ul className="mt-2 p-4 rounded-md">
                     {user.meetings.map((meeting) => (
                       <li
                         key={meeting.id}
-                        className="mb-2 flex justify-between  p-5 rounded-2xl shadow-lg shadow-amber-600 items-center"
+                        className="mb-2 flex justify-between p-5 rounded-2xl shadow-lg shadow-amber-600 items-center"
                       >
                         <div>
                           <p className="font-medium">{meeting.topic}</p>
@@ -102,8 +110,9 @@ const UpcomingMeetings = () => {
                             })
                           }
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                          disabled={deletingId === meeting.id}
                         >
-                          Delete
+                          {deletingId === meeting.id ? "Deleting..." : "Delete"}
                         </button>
                       </li>
                     ))}
