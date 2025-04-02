@@ -28,9 +28,9 @@ const CreateMeeting = () => {
       return createMeeting(formData);
     },
     onSuccess: (data) => {
-      alert("Meeting Created Successfully!");
-      setMeetingDetails(data); // Store response data
+      // alert("Meeting Created Successfully!");
       queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
+      setMeetingDetails(data); // Store response data
     },
     onError: () => alert("Failed to create meeting."),
   });

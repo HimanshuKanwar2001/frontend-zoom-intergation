@@ -1,31 +1,56 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
-console.log("apiUrl----->", apiUrl);
+
 const fetchMeetings = async () => {
-  const { data } = await axios.get(`${apiUrl}/api/zoom/upcoming/meeting`, {
-    data: { type: "upcoming" },
-  });
-  return data;
+  try {
+    const { data } = await axios.get(`${apiUrl}/api/zoom/upcoming/meeting`, {
+      data: { type: "upcoming" },
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching meetings:", error);
+    throw new Error("Failed to fetch meetings");
+  }
+};
+
+const deleteMeeting = async ({ id, host_id }) => {
+  try {
+    await axios.delete(`${apiUrl}/api/zoom/delete/meeting`, {
+      data: { id, host_id },
+    });
+  } catch (error) {
+    console.error("Error deleting meeting:", error);
+    throw new Error("Failed to delete meeting");
+  }
 };
 
 const UpcomingMeetings = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ["zoomMeetings"],
     queryFn: fetchMeetings,
+  });
+  const mutation = useMutation({
+    mutationFn: deleteMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
+    },
+    onError: (error) => {
+      alert(error.message);
+    },
   });
 
   const [selectedUser, setSelectedUser] = useState(null);
 
   if (isLoading) return <p>Loading meetings...</p>;
-  if (error) return <p>Error loading meetings: {error.message}</p>;
+  if (error) return <p className="text-red-500">{error.message}</p>;
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Upcoming Zoom Meetings</h2>
-      {/* Tabs for users */}
       <div className="flex border-b mb-4">
         {data?.map((user) => (
           <button
@@ -41,7 +66,6 @@ const UpcomingMeetings = () => {
           </button>
         ))}
       </div>
-      {/* Display meetings for the selected user */}
       {selectedUser && (
         <div>
           {data
@@ -51,20 +75,36 @@ const UpcomingMeetings = () => {
                 {user.meetings.length > 0 ? (
                   <ul className="mt-2 border p-4 rounded-md">
                     {user.meetings.map((meeting) => (
-                      <li key={meeting.id} className="mb-2">
-                        <p className="font-medium">{meeting.topic}</p>
-                        <p>
-                          Start Time:{" "}
-                          {new Date(meeting.start_time).toLocaleString()}
-                        </p>
-                        <a
-                          href={meeting.join_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
+                      <li
+                        key={meeting.id}
+                        className="mb-2 flex justify-between items-center"
+                      >
+                        <div>
+                          <p className="font-medium">{meeting.topic}</p>
+                          <p>
+                            Start Time:{" "}
+                            {new Date(meeting.start_time).toLocaleString()}
+                          </p>
+                          <a
+                            href={meeting.join_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Join Meeting
+                          </a>
+                        </div>
+                        <button
+                          onClick={() =>
+                            mutation.mutate({
+                              id: meeting.id,
+                              host_id: meeting.host_id,
+                            })
+                          }
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                         >
-                          Join Meeting
-                        </a>
+                          Delete
+                        </button>
                       </li>
                     ))}
                   </ul>
