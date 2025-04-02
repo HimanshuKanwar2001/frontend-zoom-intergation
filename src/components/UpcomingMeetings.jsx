@@ -85,7 +85,7 @@ const UpcomingMeetings = () => {
                     {user.meetings.map((meeting) => (
                       <li
                         key={meeting.id}
-                        className="mb-2 flex justify-between p-5 rounded-2xl shadow-lg shadow-amber-600 items-center"
+                        className="mb-2 flex justify-between hover:bg-blue-200 inset-shadow-2xs p-5 rounded-2xl shadow-lg items-center"
                       >
                         <div>
                           <p className="font-medium">{meeting.topic}</p>
