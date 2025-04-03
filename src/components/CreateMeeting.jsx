@@ -42,7 +42,7 @@ const CreateMeeting = () => {
       // return createMeeting(formData);
     },
     onSuccess: (data) => {
-      // alert("Meeting Created Successfully!");
+      alert("Meeting Created Successfully!");
       queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
       setMeetingDetails(data); // Store response data
     },
@@ -223,10 +223,11 @@ Join on time! ⏳`;
         )}
 
         {meetingDetails ? (
-          <div className="space-y-2">
-            <p>
+          <div className="space-y-2 text-black">
+            <p className="text-black">
               {console.log(meetingDetails)}
-              <strong>Topic:</strong> {meetingDetails.data.topic}
+              <strong className="text-black">Topic:</strong>{" "}
+              {meetingDetails.data.topic}
             </p>
             <p>
               <strong>Start Time :</strong>{" "}
