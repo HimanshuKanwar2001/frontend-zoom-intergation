@@ -85,7 +85,7 @@ Join on time! ⏳`;
               name="topic"
               value={formData.topic}
               onChange={handleChange}
-              className="w-full p-2 border rounded focus:ring focus:border-blue-400"
+              className="w-full p-2 border text-black rounded focus:ring focus:border-blue-400"
               placeholder="Enter meeting topic"
             />
           </div>
@@ -100,14 +100,14 @@ Join on time! ⏳`;
               name="start_time"
               value={formData.start_time}
               onChange={handleChange}
-              className="w-full p-2 border rounded focus:ring focus:border-blue-400"
+              className="w-full p-2 border text-black rounded focus:ring focus:border-blue-400"
             />
           </div>
 
           {/* Duration Inputs */}
           <div>
             <label className="block text-gray-700 font-medium">Duration</label>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 text-black">
               <select
                 name="durationHour"
                 value={formData.durationHour}
@@ -124,7 +124,7 @@ Join on time! ⏳`;
                 name="durationMinute"
                 value={formData.durationMinute}
                 onChange={handleChange}
-                className="p-2 border rounded w-full focus:ring"
+                className="p-2 border rounded text-black w-full focus:ring"
               >
                 {["00", "15", "30", "45"].map((m) => (
                   <option key={m} value={m}>
@@ -136,8 +136,8 @@ Join on time! ⏳`;
           </div>
 
           {/* Recurring Meeting */}
-          <div>
-            <label className="flex items-center space-x-2 cursor-pointer">
+          <div className="text-black">
+            <label className="flex items-center text-black space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 name="recurrence"
@@ -151,7 +151,7 @@ Join on time! ⏳`;
             </label>
 
             {formData.recurrence && (
-              <div className="mt-2 p-4 border rounded bg-gray-50">
+              <div className="mt-2 p-4 border text-black rounded bg-gray-50">
                 <label className="block text-gray-700 font-medium">
                   Recurrence
                 </label>

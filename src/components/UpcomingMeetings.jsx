@@ -77,7 +77,7 @@ const UpcomingMeetings = () => {
           <button
             key={user.userName}
             onClick={() => setSelectedUser(user.userName)}
-            className={`px-4 py-2 font-medium focus:outline-none border-b-2 transition-colors duration-300 ${
+            className={`px-4 py-2 font-medium text-white focus:outline-none border-b-2 transition-colors duration-300 ${
               selectedUser === user.userName
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-600"
