@@ -4,17 +4,17 @@ import axios from "axios";
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-const fetchMeetings = async () => {
-  try {
-    const { data } = await axios.get(`${apiUrl}/api/zoom/upcoming/meeting`, {
-      data: { type: "upcoming" },
-    });
-    return data;
-  } catch (error) {
-    console.error("Error fetching meetings:", error);
-    throw new Error("Failed to fetch meetings");
-  }
-};
+// const fetchMeetings = async () => {
+//   try {
+//     const { data } = await axios.get(`${apiUrl}/api/zoom/upcoming/meeting`, {
+//       data: { type: "upcoming" },
+//     });
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching meetings:", error);
+//     throw new Error("Failed to fetch meetings");
+//   }
+// };
 
 const deleteMeeting = async ({ id, host_id }) => {
   try {
@@ -34,7 +34,20 @@ const UpcomingMeetings = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["zoomMeetings"],
-    queryFn: fetchMeetings,
+    queryFn: async () => {
+      try {
+        const { data } = await axios.get(
+          `${apiUrl}/api/zoom/upcoming/meeting`,
+          {
+            data: { type: "upcoming" },
+          }
+        );
+        return data;
+      } catch (error) {
+        console.error("Error fetching meetings:", error);
+        throw new Error("Failed to fetch meetings");
+      }
+    },
   });
 
   const mutation = useMutation({
@@ -85,35 +98,65 @@ const UpcomingMeetings = () => {
                     {user.meetings.map((meeting) => (
                       <li
                         key={meeting.id}
-                        className="mb-2 flex justify-between hover:bg-blue-200 inset-shadow-2xs p-5 rounded-2xl shadow-lg items-center"
+                        className=" card w-full bg-base-100 card-xs  mb-2 flex justify-between hover:text-black hover:bg-blue-200 inset-shadow-2xs p-5 rounded-2xl shadow-lg items-center"
                       >
-                        <div>
-                          <p className="font-medium">{meeting.topic}</p>
-                          <p>
-                            Start Time:{" "}
-                            {new Date(meeting.start_time).toLocaleString()}
-                          </p>
-                          <a
-                            href={meeting.join_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            Join Meeting
-                          </a>
+                        <div className="   card w-full  card-xs ">
+                          <div className="card-body">
+                            <h2 className="card-title text-2xl">
+                              {meeting.topic}
+                            </h2>
+                            <p className="text-xl">
+                              Date :{" "}
+                              <span>
+                                {
+                                  new Date(meeting.start_time)
+                                    .toLocaleString()
+                                    .split(",")[0]
+                                }
+                              </span>
+                            </p>
+
+                            <p className="text-xl">
+                              Time:{" "}
+                              <span>
+                                {
+                                  new Date(meeting.start_time)
+                                    .toLocaleString()
+                                    .split(",")[1]
+                                }
+                              </span>
+                            </p>
+
+                            <div className="justify-end card-actions">
+                              <div>
+                                <a
+                                  href={meeting.join_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-primary"
+                                >
+                                  Join Meeting
+                                </a>
+                              </div>
+                              <div>
+                                <button
+                                  onClick={() =>
+                                    mutation.mutate({
+                                      id: meeting.id,
+                                      host_id: meeting.host_id,
+                                    })
+                                  }
+                                  className="btn bg-red-600"
+                                  disabled={deletingId === meeting.id}
+                                >
+                                  {deletingId === meeting.id
+                                    ? "Deleting..."
+                                    : "Delete"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <button
-                          onClick={() =>
-                            mutation.mutate({
-                              id: meeting.id,
-                              host_id: meeting.host_id,
-                            })
-                          }
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                          disabled={deletingId === meeting.id}
-                        >
-                          {deletingId === meeting.id ? "Deleting..." : "Delete"}
-                        </button>
                       </li>
                     ))}
                   </ul>

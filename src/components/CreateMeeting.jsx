@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createMeeting } from "../api/zoom";
+import axios from "axios";
+// import { createMeeting } from "../api/zoom";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const CreateMeeting = () => {
   const [formData, setFormData] = useState({
@@ -24,8 +27,19 @@ const CreateMeeting = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      console.log("formData", formData);
-      return createMeeting(formData);
+      try {
+        const response = await axios.post(
+          `${API_URL}/api/zoom/create/meeting`,
+          formData
+        );
+        return response.data;
+      } catch (error) {
+        console.error("Error creating meeting:", error);
+        return null;
+      }
+
+      // console.log("formData", formData);
+      // return createMeeting(formData);
     },
     onSuccess: (data) => {
       // alert("Meeting Created Successfully!");
