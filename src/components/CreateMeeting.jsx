@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import toast from "react-hot-toast";
 // import { createMeeting } from "../api/zoom";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -25,13 +26,20 @@ const CreateMeeting = () => {
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
-  const mutation = useMutation({
+  const {
+    mutate: createMeeting,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
     mutationFn: async () => {
       try {
         const response = await axios.post(
           `${API_URL}/api/zoom/create/meeting`,
           formData
         );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Something went wrong");
         return response.data;
       } catch (error) {
         console.error("Error creating meeting:", error);
@@ -42,11 +50,14 @@ const CreateMeeting = () => {
       // return createMeeting(formData);
     },
     onSuccess: (data) => {
-      alert("Meeting Created Successfully!");
+      toast.success("Meeting Created Successfully!");
       queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
       setMeetingDetails(data); // Store response data
     },
-    onError: () => alert("Failed to create meeting."),
+    onError: () => {
+      toast.error("Failed to create meeting");
+      throw Error("Failed to create meeting");
+    },
   });
 
   const copyToClipboard = () => {
@@ -197,10 +208,10 @@ Join on time! ⏳`;
 
           {/* Submit Button */}
           <button
-            onClick={() => mutation.mutate()}
+            onClick={() => createMeeting()}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
           >
-            {mutation.isLoading ? "Creating..." : "Create Meeting"}
+            {isPending ? "Creating..." : "Create Meeting"}
           </button>
         </div>
       </div>

@@ -5,20 +5,26 @@ import { RecoilRoot } from "recoil";
 import ZoomMeetings from "./components/CreateMeeting";
 import ZoomMeetingForm from "./components/ZoomMeetingForm";
 import SearchMeetings from "./components/SearchMeetings";
+import SearchMeeting from "./components/SearchMeeting";
+import ZoomForm from "./components/ZoomForm";
+import RecurringMeetingForm from "./components/RecurringMeetingForm";
+import ZoomRecurrenceForm from "./components/NewForm";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   return (
     <RecoilRoot>
-      <div className="p-5  mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-5">
-          Zoom Meeting Manager
-        </h1>
-        <SearchMeetings />
-        <CreateMeeting />
-        {/* <ZoomMeetings /> */}
+      <div className="bg-black mx-auto min-w-screen min-h-screen">
+        {/* <div className="p-5  mx-auto"> */}
+
+        <SearchMeeting />
+        <ZoomForm />
+        {/* <ZoomRecurrenceForm/> */}
+        {/* <SearchMeetings /> */}
+        {/* <CreateMeeting /> */}
         <UpcomingMeetings />
-        {/* <ZoomMeetingForm/> */}
       </div>
+      <Toaster />
     </RecoilRoot>
   );
 };
