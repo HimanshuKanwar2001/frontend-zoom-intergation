@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
@@ -26,16 +22,10 @@ const UpcomingMeetings = () => {
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-  } = useQuery({
+  const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: ["zoomMeetings"],
     queryFn: fetchMeetings,
-    // refetchOnWindowFocus: true,
+    refetchIntervalInBackground: true,
   });
 
   const mutation = useMutation({

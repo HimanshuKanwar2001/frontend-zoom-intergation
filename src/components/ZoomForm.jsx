@@ -63,7 +63,9 @@ const ZoomForm = () => {
       setMeetingDetails(data);
       toast.success("✅ Meeting Created Successfully!");
       queryClient.invalidateQueries({ queryKey: ["zoomMeetings"] });
+      queryClient.refetchQueries({ queryKey: ["zoomMeetings"] });
     },
+    
     onError: (error) => {
       console.error("Error creating meeting:", error);
       toast.error(
@@ -175,7 +177,7 @@ Join on time! ⏳`;
           </div>
 
           {/* Recurring */}
-          <label className="flex items-center space-x-2 cursor-pointer">
+          {/* <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               name="recurrence"
@@ -184,7 +186,7 @@ Join on time! ⏳`;
               className="checkbox checkbox-primary"
             />
             <span className="text-lg font-semibold">Recurring meeting</span>
-          </label>
+          </label> */}
 
           {formData.recurrence && (
             <div className="text-white p-6 rounded-md">
